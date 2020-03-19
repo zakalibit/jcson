@@ -1,0 +1,23 @@
+{
+    "profile": {
+        "ports": {
+            "proxy": 80,
+            "webapp": 8080
+        },
+
+        "env": {
+            "debug": 1
+        }
+    },
+
+    "services": {
+        "proxy": {
+            "port": "${profile.ports.proxy}"
+        },
+
+        "webapp": {
+            "port": "${profile.ports.webapp}",
+            "env": "${profile.env}"
+        }
+    }
+}

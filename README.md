@@ -1,0 +1,2 @@
+# jcson
+JSON for configuration

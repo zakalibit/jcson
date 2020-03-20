@@ -2,7 +2,7 @@
 
 def traverse(dictionary, path=[]):
     if isinstance(dictionary, dict):
-        iterator = dictionary.iteritems()
+        iterator = dictionary.items()
     else:
         iterator = enumerate(dictionary)
     for k, v in iterator:
@@ -36,10 +36,3 @@ def find(dictionary, key):
         else: break
 
     return value
-
-
-def find_innermost(dictionary, key, parent):
-    if len(parent):
-        v = find_innermost(dictionary[parent[0]], key, parent[1:])
-        if v: return v
-    return find(dictionary, key)

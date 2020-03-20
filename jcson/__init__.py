@@ -1,15 +1,23 @@
+# -*- coding: utf-8 -*-
+
 __version__ = '0.1.0'
 __all__ = ['read']
 
 __author__ = 'Alex Revetchi <alex.revetchi@gmail.com>'
 
 import os
+import io
 import re
+import sys
 import copy
 import json
-import jpath
+from jcson import jpath
 from collections import  defaultdict, OrderedDict
 
+if sys.version_info[0] >= 3:
+    __str_types__ = (str, bytes)
+else:
+    __str_types__ = (str, unicode)
 
 def strip_comments(content_in):
     content_out = ''
@@ -26,8 +34,8 @@ def strip_comments(content_in):
 
 
 def file_content(filename):
-    with open(filename, 'r') as f:
-        content = f.read().decode('utf-8')
+    with io.open(filename, 'rt', encoding='utf8') as f:
+        content = f.read()
         return strip_comments(content)
 
 
@@ -53,7 +61,7 @@ def load_content(filename):
 re_var = re.compile(r'\${(?P<mvar>[\w\._-]+)}')
 
 def parse_substitutions(path, node):
-    if not isinstance(node, (str, unicode)): return
+    if not isinstance(node, __str_types__): return
 
     res = re_var.findall(node)
     for m in res:
@@ -61,8 +69,8 @@ def parse_substitutions(path, node):
         yield depth, {'path': path, 'var': m}
 
 
-def resolve_substitution_value(config, path, subst):
-    v = jpath.find_innermost(config, subst, path[:-1])
+def resolve_substitution_value(config, subst, path):
+    v = jpath.find(config, subst)
 
     if v is None:
         if subst in os.environ:
@@ -75,10 +83,11 @@ def resolve_substitution_value(config, path, subst):
     return v
 
 
-def expand_node_substitution(config, path, subst, value):
+def expand_node_substitution(config, subst, path, value):
     p = path[0]
+
     if len(path) > 1:
-        expand_node_substitution(config[p], path[1:], subst, value)
+        expand_node_substitution(config[p], subst, path[1:], value)
     else:
         var = '${'+subst+'}'
         if config[p] == var:
@@ -103,7 +112,7 @@ def read(filename):
 
         for _, subs in substitutions.items():
             for s in subs:
-                v = resolve_substitution_value(config, s['path'], s['var'])
-                expand_node_substitution(config, s['path'], s['var'], v)
+                v = resolve_substitution_value(config, s['var'], s['path'])
+                expand_node_substitution(config, s['var'], s['path'], v)
 
     return config

@@ -1,0 +1,13 @@
+{
+    "profile": {
+        "ports": {
+            "proxy": 80,
+            "webapp": 8080
+        },
+
+        "env": {
+            "debug": 1,
+            "array": [1,2,3]
+        }
+    }
+}

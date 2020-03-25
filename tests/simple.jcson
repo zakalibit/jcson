@@ -1,14 +1,5 @@
 {
-    "profile": {
-        "ports": {
-            "proxy": 80,
-            "webapp": 8080
-        },
-
-        "env": {
-            "debug": 1
-        }
-    },
+    include "simple_include.jcson"
 
     "services": {
         "proxy": {
@@ -17,7 +8,8 @@
 
         "webapp": {
             "port": "${profile.ports.webapp}",
-            "env": "${profile.env}"
+            "env": "${profile.env}",
+            "@include": "some file"
         }
     }
 }

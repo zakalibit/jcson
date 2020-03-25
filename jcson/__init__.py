@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-__version__ = '0.1.1'
+__version__ = '0.1.3'
 __all__ = ['read']
 
 __author__ = 'Alex Revetchi <alex.revetchi@gmail.com>'
@@ -12,6 +12,7 @@ import sys
 import copy
 import json
 from jcson import jpath
+from jcson import jfixer
 from collections import  defaultdict, OrderedDict
 
 if sys.version_info[0] >= 3:
@@ -23,7 +24,7 @@ def strip_comments(content_in):
     content_out = ''
     for l in content_in.splitlines(True):
         ## skip empty lines & strip comments
-        l = l.strip()
+        l = l.lstrip()
         if not l or l.startswith('#'):
             content_out +='\n'  ## make error reporting match original file line numbering
         else:
@@ -33,24 +34,54 @@ def strip_comments(content_in):
     return content_out
 
 
+re_include = re.compile(r'(#*\s*include\s+\"([\/\w\.]+\w+)\")')
+
+
+def validate_jcontent(fcontent):
+    """
+        Validates json content ignoric include directives
+    """
+    includes = re_include.finditer(fcontent)
+    
+    last_end = 0
+    content = ''
+    for inc in includes:
+        content += fcontent[last_end:inc.start()]
+        last_end = inc.end()
+    if last_end:
+        fcontent = content + fcontent[last_end:]
+    json.loads(fcontent)
+
+
 def file_content(filename):
     with io.open(filename, 'rt', encoding='utf8') as f:
         content = f.read()
-        return strip_comments(content)
-
-
-re_include = re.compile(r'(#*\s*include\s+\"([\/\w\.]+\w+)\")')
-
+        content = strip_comments(content)
+        validate_jcontent(content)
+        return content
+        
+    
 def process_includes(filename):
-    content = file_content(filename)
-    incfiles = re_include.findall(content)
+    path = os.path.dirname(os.path.abspath(filename))
 
-    while incfiles:
-        for include, ifile in incfiles:
-            icontent = file_content(ifile)
-            content = content.replace(include, icontent)
-        incfiles = re_include.findall(content)
-    return content
+    fcontent = file_content(filename)
+    includes = [i for i in re_include.finditer(fcontent)]
+
+    while len(includes):
+        last_end = 0
+        content = ''
+        for inc in includes:
+            icontent = file_content(os.path.join(path, inc.group(2)))
+            content += fcontent[last_end:inc.start()] + icontent.strip().strip('{}')
+            last_end = inc.end()
+
+        content += fcontent[last_end:]
+        content = jfixer.fix_missing_trailing_commas(content)
+
+        includes = [i for i in re_include.finditer(content)]
+        fcontent = content
+        
+    return fcontent
 
 
 def load_content(filename):

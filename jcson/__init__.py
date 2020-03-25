@@ -39,7 +39,7 @@ re_include = re.compile(r'(#*\s*include\s+\"([\/\w\.]+\w+)\")')
 
 def validate_jcontent(fcontent):
     """
-        Validates json content ignoric include directives
+        Validates json content ignoring include directives
     """
     includes = re_include.finditer(fcontent)
     

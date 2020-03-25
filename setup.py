@@ -17,6 +17,7 @@ def version():
 setup(name             = 'jcson',
       description      = 'jcson - enhanced json for configuration',
       long_description = read('README.md'),
+      long_description_content_type = 'text/markdown',
       version          = version(),
       author           = 'Alex Revetchi',
       author_email     = 'alex.revetchi@gmail.com',

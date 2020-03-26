@@ -1,0 +1,15 @@
+{
+    "services": {
+        "proxy": {
+            "port": "${services.circular.port}"
+        },
+
+        "webapp": {
+            "port": "${services.proxy.port}"
+        },
+
+        "circular": {
+            "port": "${services.webapp.port}"
+        }
+    }
+}

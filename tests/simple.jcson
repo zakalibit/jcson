@@ -8,8 +8,7 @@
 
         "webapp": {
             "port": "${profile.ports.webapp}",
-            "env": "${profile.env}",
-            "@include": "some file"
+            "env": "${profile.env}"
         }
     }
 }

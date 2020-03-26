@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-__version__ = '0.1.3'
+__version__ = '0.1.4'
 __all__ = ['read']
 
 __author__ = 'Alex Revetchi <alex.revetchi@gmail.com>'
@@ -19,6 +19,11 @@ if sys.version_info[0] >= 3:
     __str_types__ = (str, bytes)
 else:
     __str_types__ = (str, unicode)
+
+
+class CircularReferenceError(Exception):
+    pass
+
 
 def strip_comments(content_in):
     content_out = ''
@@ -95,7 +100,10 @@ def parse_substitutions(path, node):
     if not isinstance(node, __str_types__): return
 
     res = re_var.findall(node)
+    spath = '.'.join(path)
     for m in res:
+        if m == spath:
+            raise CircularReferenceError('Circular reference detected for: {}'.format(m))
         depth = len(m.split('.'))
         yield depth, {'path': path, 'var': m}
 
@@ -136,8 +144,8 @@ def read(filename):
 
         ## collect all stubstitutions sorted by depth
         for path, node in jpath.traverse(config):
-            for depth, subst in  parse_substitutions(path, node):
-                substitutions[depth].append(subst)
+            for depth, s in  parse_substitutions(path, node):
+                substitutions[depth].append(s)
 
         if not len(substitutions): break
 

@@ -5,9 +5,26 @@
 ## Introdcution
 The jcson python module is an enhanced json parser, that supports:
 
-* path expression sustitutions, a way of referring to other parts of the json/dictionary tree
+* path expression subtitutions, with fallback to environment variables.
 * include directive
 * new line and inline comments
+
+
+## Path expression sustitutions
+
+Substitutions are a way of referring to other parts of the configuration tree.
+The syntax is ${pathe.xpression} where the path.expression is used to write out a path through the object graph, like
+${foo.bar} that refers to { "foo": { "bar" : 42 }
+If a substitution is not present within a configuration tree, search will attempt to fallback to environment variables.
+
+
+## Include directive
+
+An include directive consists of the unquoted string include followed by quoted filename.
+
+```
+include "include.jcson"
+```
 
 
 ## Instaling
